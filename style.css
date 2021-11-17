@@ -1,0 +1,99 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  height: 100%;
+  max-width: 600px;
+  width: 600px;
+}
+
+.chat-out {  
+  height: calc(100vh - 100px); 
+  overflow-y: auto;
+  border: 1px solid black;
+}
+.chat {
+  padding: 10px;
+  min-height: 100%;  
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+}
+
+
+.message {
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  margin-bottom: 30px;
+  background: white;
+}
+.message::before {
+  position: absolute;
+  content: attr(data-time);
+  font-size: 0.6rem;
+  top: 5px;
+  right: 5px;
+}
+.message::after {
+  position: absolute;
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
+  background: white;
+  transform: rotate(45deg);
+  bottom: -6px;
+}
+
+.message-my {
+  margin-left: 50px;
+}
+.message-my::after {
+  right: 15px;  
+}
+
+.message-pc {
+  margin-right: 50px;
+}
+.message-pc::after {
+  left: 15px;
+}
+
+.chat-out {
+  background-color: azure;
+  background-image: url(./patterns/circuit-board.svg);
+}
+
+.input-line {
+  display: flex;
+  align-items: center;
+  height: 100px;
+
+}
+button {
+  border: none;
+  background-color: white;
+  border-radius: 5px;
+  padding: 5px 5px;
+  font-size: 2em;
+}
+.user-mess {
+  border: none;
+  flex: 1;
+  margin: 0 5px;
+  font-size: 1.5em;
+  outline: none;
+}
