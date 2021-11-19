@@ -1,5 +1,6 @@
 function load() {
   const length = 6;
+  const regExp = new RegExp(`^[0-9]{${length}}$`);
   const rules = [
     `Отвечайте в формате <strong>${''.padEnd(length, '0')}</strong> (${length} без пробелов)`,
     'После каждого хода отвечу сколько угадано всего цифр и сколько на правильных местах'
@@ -9,6 +10,8 @@ function load() {
   const menuBtnEl = document.querySelector('.menu-btn');
   const sendBtnEl = document.querySelector('.send-btn');
 
+  const chatLink = cmd => `<span class="command">${cmd}</span>`;
+  const arrToObj = (arr) => arr.reduce((res, cur) => (res[cur] = (res[cur] || 0) + 1) && res, {});
 
   const addMessageToChat = ({ type = 'pc', content }) => {
     if (content) {
@@ -19,7 +22,9 @@ function load() {
     }
   };
 
-
+  const addNewGameMsg = () => addMessageToChat({ type: 'menu', content: ` Для запуска новой игры: ${chatLink('newgame')}` });
+  addNewGameMsg();
+  let gameObj;
 
   const cmdObj = {
     menu() {
@@ -34,15 +39,42 @@ function load() {
         combination.push(~~(Math.random() * 10));
       }
       addMessageToChat({ content: `Я загадал комбинацию из ${length} цифр, попробуйте угадать! <br/> ${rules.join('<br/>')}` });
-      addMessageToChat({content: combination.join('')});
+      //addMessageToChat({ content: combination.join('') });
+      gameObj = { combination, move: 0, combinationObj: arrToObj(combination)};
     }
-
   };
 
   const showMenu = () => {
     const menu = 'Доступные команды<br/>' +
-      Object.keys(cmdObj).map(x => `<span class="command">${x}</span>`).join('<br/>');
+      Object.keys(cmdObj).map(x => chatLink(x)).join('<br/>');
     addMessageToChat({ type: 'menu', content: menu })
+  }
+
+  const userMove = (current) => {
+    if (gameObj) {
+      gameObj.move++;
+      const currentObj = arrToObj(current);
+      const { combinationObj, combination, move } = gameObj;
+      let rightNum = 0;
+      let rightPlace = 0;
+      combination.forEach((x, i) => {
+        if (x === current[i]) { rightPlace++;}
+      });
+      Object.keys(combinationObj).forEach(x => {
+        const combiVal = combinationObj[x] || 0;
+        const curVal = currentObj[x] || 0;
+        rightNum += combiVal < curVal ? combiVal : curVal;
+      });     
+      if (rightPlace === 6) {
+        addMessageToChat({ content: `ход ${move.toString().padEnd(2, ' ')} Поздравляю с победой!` });
+        addNewGameMsg();
+      } else {
+         addMessageToChat({ content: `ход ${move.toString().padEnd(2, ' ')} угадано цифр ${rightNum}, на своём месте ${rightPlace}` });
+      } 
+    } else { 
+      addMessageToChat({ content: 'Игра не начата' });
+    }
+
   }
 
   const analizeCommand = (command) => {
@@ -53,14 +85,15 @@ function load() {
     const cmdFunc = cmdObj[cmd];
     if (typeof (cmdFunc) === 'function') {
       cmdFunc(...params);
-      return;
-    }
-
-    addMessageToChat({ content: 'Неизвестная команда' });
+    } else if (regExp.test(cmd)){
+      userMove(cmd.split('').map(x => +x));
+    } else {
+      addMessageToChat({ content: 'Неизвестная команда' });
+    }    
   };
 
   const sendCommand = () => {
-    if (userMessEl.value) {      
+    if (userMessEl.value) {
       analizeCommand(userMessEl.value);
       userMessEl.value = '';
     }
@@ -76,7 +109,7 @@ function load() {
   sendBtnEl.addEventListener('click', sendCommand);
   menuBtnEl.addEventListener('click', () => analizeCommand('menu'));
 
-  chatEl.addEventListener('click', ({ target }) => {    
+  chatEl.addEventListener('click', ({ target }) => {
     if (target.classList.contains("command")) {
       analizeCommand(target.textContent);
     }
